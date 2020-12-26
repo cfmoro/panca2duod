@@ -5,9 +5,11 @@ Preprocess, prurging of missing data, and explorative analysis
 
 Generated on: `r Sys.time()`
 
-```{r}
+```{r setup}
+# Libs
 library(Amelia)
 library(tidyr)
+library(dplyr)
 library(ggplot2)
 library(nlme)
 library(car)
@@ -15,13 +17,10 @@ library(psych)
 
 library(ggpubr)
 library(rstatix)
-```
 
-Paths
-```{r}
-work_dir <- "/home/bibu/Workspace/Panca2Duod/data/"
+#Paths
+work_dir <- "/home/bibu/Workspace/panca2duod/"
 panca2duoud_raw_fn <- paste(work_dir, "tuep_parsed_final_bela_nov20.csv", sep="")
-#imputedPcbilFileName  <- paste(myWorkDirectory, "hcc-pcbil_FDATA_ANALYSIS/r/output/imputedPcbilD.csv", sep="")
 ```
 
 Import raw dataset, check structured column names and create updated wide dataset with structured column names (makers and suffixes for tissue compartment)
@@ -29,7 +28,7 @@ Import raw dataset, check structured column names and create updated wide datase
 
 structured_column_names <- c('pad', '', '', 'halalozas', 'digit', 'ck5_mu',	'ck5_su',	'ck5_bas',	'ck5_lum',	'ck7_mu',	'ck7_su',	'ck7_iv',	'ck7_bas',	'ck7_lum',	'ck20_mu',	'ck20_su',	'ck20_iv',	'ck20_bas',	'ck20_lum',	'ck17_mu',	'ck17_su',	'ck17_iv',	'ck17_bas',	'ck17_lum',	'p63_mu',	'p63_su',	'wt1_mu',	'wt1_su', 'wt1_must',	'wt1_sust',	'ca125_mu',	'ca125_su',	'ca125_iv',	'ca125_bas',	'ca125_lum',	'cdx2_mu',	'cdx2_su',	'cdx2_bas',	'cdx2_lum',	'ca19-9_mu',	'ca19-9_su',	'ca19-9_iv',	'ca19-9_bas',	'ca19-9_lum',	'ecad_mu',	'ecad_su',	'ecad_iv',	'cea-m_mul',	'cea-m_mu',	'cea-m_su',	'cea-m_iv',	'cea-m_bas',	'cea-m_lum',	'muc1_mu',	'muc1_su',	'muc1_iv',	'muc1_bas',	'muc1_lum',	'muc2_mu',	'muc2_su',	'muc2_iv',	'muc2_bas',	'muc2_lum',	'muc5_mul',	'muc5_mu',	'muc5_su',	'muc5_iv',	'muc5_bas',	'muc5_lum',	'muc6_mul',	'muc6_mu',	'muc6_iv',	'muc6_su',	'muc6_bas',	'muc6_lum',	'lym_mu',	'lym_su',	'masp_mu',	'masp_su',	'masp_bas',	'masp_lum',	'masp_iv',	'berep4_mu',	'berep4_su',	'berep4_bas',	'berep4_lum',	'ema_mu',	'ema_su',	'ema_bas',	'ema_lum',	'cd10_mu',	'cd10_su',	'cd10_bas',	'cd10_lum',	'cd10_must',	'cd10_sust',	'pdx1_mu',	'pdx1_su',	'pdx1_bas',	'pdx1_lum',	'p53_mu',	'p53_su',	'smad4_mu',	'smad4_su',	'd2-40_must',	'd2-40_perimu',	'd2-40_sust',	'cd56_mustr',	'cd56_sustr',	'ki67_mu',	'ki67_su',	'ki67_bas',	'ki67_lum',	'polar_mu',	'polar_su',	'field',	'field_pcbil',	'calret_mu',	'calret_su',	'calret_must',	'calret_sust')
 
-panca2duoud_raw <- read.csv(file = panca2duoud_raw_fn, na.strings = "", stringsAsFactors = F, sep= ";")
+panca2duoud_raw <- read.csv(file = panca2duoud_raw_fn, na.strings = "", stringsAsFactors = F, sep= ",")
 
 test_column_names_df  <- rbind(panca2duoud_raw[ 0 , ], structured_column_names)
 
@@ -161,7 +160,7 @@ tidy_panca2duoud[is.na(tidy_panca2duoud$compartment), ]$compartment <- "global"
 tidy_panca2duoud$compartment <- as.factor(tidy_panca2duoud$compartment)
 tidy_panca2duoud$compartment <- factor(tidy_panca2duoud$compartment, levels = c("su", "mu", "bas", "lum", "global", "iv", "mul", "must", "mustr",  "pcbil", "perimu", "sust", "sustr"))
 
-ggplot(subset(tidy_panca2duoud, !is.na(value) & compartment %in% c("mu", "su", "bas", "lum"))) + geom_bar(aes(x=compartment, y=value, fill=compartment),  stat="summary", fun.y=mean) + facet_wrap(~marker, ncol=2)  + theme(strip.text.x = element_text(size = 14, face = "bold")) + theme(axis.text.y = element_text(size = 14))
+ggplot(subset(tidy_panca2duoud, !is.na(value) & compartment %in% c("mu", "su", "bas", "lum"))) + geom_bar(aes(x=compartment, y=value, fill=compartment),  stat="summary", fun.y=mean) + facet_wrap(~marker, ncol=4)  + theme(strip.text.x = element_text(size = 14, face = "bold")) + theme(axis.text.y = element_text(size = 14))
 
 #ggplot(subset(tidy_panca2duoud, !is.na(value))) + geom_bar(aes(x=compartment, y=value, fill=compartment),  stat="summary", fun.y=mean) + facet_wrap(~marker, ncol=2) + theme(strip.text.x = element_text(size = 14, face = "bold")) + theme(axis.text.y = element_text(size = 14))
 
@@ -170,164 +169,116 @@ write.csv(tidy_panca2duoud, "panca2duod_scores_long.csv", row.names=FALSE)
 
 
 
-
-# NEW CODE
 Submucosa - mucosa
 ```{r, fig.width= 14, fig.asp= 0.85, align = "default"}
+# Filter compartments of interest and arrange in a paired df
+data_su <- tidy_panca2duoud %>% filter(compartment == "su")
+data_mu <- tidy_panca2duoud %>% filter(compartment == "mu")
+data_sumu <- rbind(data_su, data_mu)
 
-pwc <- tidy_panca2duoud %>% filter(compartment %in% c("su", "mu")) %>%
+marker_list_sumu <- data_sumu %>% group_by(marker) %>% summarise(diff_sumu = abs( mean( value[compartment=="su"], na.rm = TRUE) - mean( value[compartment == "mu"], na.rm = TRUE))  ) %>% arrange(desc(diff_sumu)) %>% filter(diff_sumu > 5) %>% pull(marker)
+marker_list_sumu <- marker_list_sumu[!marker_list_sumu %in% c("masp", "cd10")]
+
+data_sumu <- data_sumu %>% filter(marker %in% marker_list_sumu)
+
+# Some descriptive stats
+sumu_descr <- data_sumu %>%
+  group_by(marker, compartment) %>%
+  get_summary_stats(value, type = "median")
+sumu_descr
+
+# Wilcox test
+pwc_sumu <- data_sumu %>%
   group_by(marker) %>%
-  wilcox_test(value ~ compartment, p.adjust.method = "holm", paired = TRUE)
-pwc
+  wilcox_test(value ~ compartment, paired = TRUE)  %>%
+  adjust_pvalue(method = "BH") %>%
+  add_significance("p.adj")
+pwc_sumu
 
-pwc <- pwc %>% add_xy_position(x = "compartment")
+# Effect sizes
+eff_size <- data_sumu  %>%
+  group_by(marker) %>%
+  wilcox_effsize(value ~ compartment, paired = TRUE)
+eff_size
 
 # Box plot
-bxp <- tidy_panca2duoud %>% filter(compartment %in% c("su", "mu")) %>%
+pwc_sumu <- pwc_sumu %>% add_xy_position(x = "compartment")
+
+bxp <- data_sumu %>%
   ggboxplot(x = "compartment", y = "value", color = "compartment", palette = "jco", facet.by = "marker") +
   stat_pvalue_manual(
-    pwc, hide.ns = TRUE, step.group.by = "marker",
-    tip.length = 0, step.increase = 0.1
-    )  +
+    pwc_sumu, hide.ns = TRUE, step.group.by = "marker", label = "p = {round(p.adj, 3)}",
+    tip.length = 0, step.increase = 0.1)  +
    scale_y_continuous(expand = expansion(mult = c(0, 0.1))) # + ylim (c(0, 110))
 bxp
+```
+
+```{r, fig.width= 12, fig.asp= 0.75, align = "default"}
+# Paired plots
+ggpaired(data_sumu, x = "compartment", y = "value", 
+         order = c("su", "mu"),
+         facet.by = "marker",
+         fill = "compartment", palette = "jco", 
+        title = "PDAC2Duodenum IHC tissue compartments", 
+        ylab = "% positive") + stat_pvalue_manual(pwc_sumu, tip.length = 0, label = "p = {round(p.adj, 3)} {p.adj.signif}", size = 3.7) + expand_limits(y=114) 
 ```
 
 Mucosa: basal - luminal
 ```{r, fig.width= 14, fig.asp= 0.85, align = "default"}
-pwc <- tidy_panca2duoud %>% filter(compartment %in% c("bas", "lum")) %>%
-  group_by(marker) %>%
-  wilcox_test(value ~ compartment, p.adjust.method = "holm", paired = TRUE)
-pwc
+# Filter compartments of interest and arrange in a paired df
+data_bas <- tidy_panca2duoud %>% filter(compartment == "bas")
+data_lum <- tidy_panca2duoud %>% filter(compartment == "lum")
+data_baslum <- rbind(data_bas, data_lum)
 
-pwc <- pwc %>% add_xy_position(x = "compartment")
+marker_list_baslum <- data_baslum %>% group_by(marker) %>% summarise(diff_sumu = abs( mean( value[compartment=="bas"], na.rm = TRUE) - mean( value[compartment == "lum"], na.rm = TRUE))  ) %>% arrange(desc(diff_sumu)) %>% filter(diff_sumu > 5) %>% pull(marker)
+marker_list_baslum <- marker_list_sumu[!marker_list_sumu %in% c("cd10")]
+
+data_baslum <- data_baslum %>% filter(marker %in% marker_list_baslum)
+
+# Some descriptive stats
+baslum_descr <- data_baslum %>%
+  group_by(marker, compartment) %>%
+  get_summary_stats(value, type = "median")
+baslum_descr
+
+# Wilcox test
+pwc_baslum <- data_baslum %>%
+  group_by(marker) %>%
+  wilcox_test(value ~ compartment, paired = TRUE) %>%
+  adjust_pvalue(method = "BH") %>%
+  add_significance("p.adj")
+pwc_baslum
+
+# Effect sizes
+eff_size_baslum <- data_baslum %>%
+  group_by(marker) %>%
+  wilcox_effsize(value ~ compartment, paired = TRUE)
+eff_size_baslum
 
 # Box plot
-bxp <- tidy_panca2duoud %>% filter(compartment %in% c("bas", "lum")) %>%
+pwc_baslum <- pwc_baslum %>% add_xy_position(x = "compartment")
+
+bxp_baslum <- data_baslum %>%
   ggboxplot(x = "compartment", y = "value", color = "compartment", palette = "jco", facet.by = "marker") +
   stat_pvalue_manual(
-    pwc, hide.ns = TRUE, step.group.by = "marker",
+    pwc_baslum, hide.ns = TRUE, step.group.by = "marker", label = "p = {round(p.adj, 3)}",
     tip.length = 0, step.increase = 0.1
     )  +
    scale_y_continuous(expand = expansion(mult = c(0, 0.1))) # + ylim (c(0, 110))
-bxp
+bxp_baslum
 ```
 
-# OLD CODE - DISREGARD
-```{r}
-#### Significant: ck20, ck17, ca125, ca19-9, muc2, muc5, ki67
-markers <- unique(tidy_panca2duoud$marker)
-markers <- markers[ - which(markers %in% c("d2-40", "cd56", "field"))]
-
-for(a_marker in markers) {
-  print("")
-  print("########")
-  print(a_marker)
-  
-  w_t <- wilcox.test(panca2duoud_wide_coltrim_rowtrim[ , c(paste(a_marker, "_su", sep=""))], panca2duoud_wide_coltrim_rowtrim[ , c(paste(a_marker, "_mu", sep=""))],  paired=TRUE)
-  print(w_t)
-  
-}
-
-print("###########################################################################")
-print("")
-
-for(a_marker in c("ck17", "ck20", "muc2", "muc5", "ca19-9", "ca125", "ki67")) {
-      h1 <- qplot(panca2duoud_wide_coltrim_rowtrim[ , c(paste(a_marker, "_mu", sep=""))] - panca2duoud_wide_coltrim_rowtrim[ , c(paste(a_marker, "_su", sep=""))], geom="histogram", main = paste("Histogram diffs for ", a_marker, xlab = "diffs mu - su"))
-    print(h1)
-}
-
-print("###########################################################################")
-print("")
-
-#### Significant: ck20, muc5
-markers <- unique(tidy_panca2duoud$marker)
-markers <- markers[ - which(markers %in% c("p63", "wt1", "lym", "pdx1", "p53", "smad4", "d2-40", "cd56", "polar", "field"))]
-
-for(a_marker in markers) {
-  print("")
-  print("########")
-  print(a_marker)
-  
-  print(wilcox.test(panca2duoud_wide_coltrim_rowtrim[ , c(paste(a_marker, "_bas", sep=""))], panca2duoud_wide_coltrim_rowtrim[ , c(paste(a_marker, "_lum", sep=""))],  paired=TRUE))
-
-}
-
-print("###########################################################################")
-print("")
-
-for(a_marker in c("ck20", "muc5")) {
-        h1 <- qplot(panca2duoud_wide_coltrim_rowtrim[ , c(paste(a_marker, "_lum", sep=""))] - panca2duoud_wide_coltrim_rowtrim[ , c(paste(a_marker, "_bas", sep=""))], geom="histogram", main = paste("Histogram diffs for ", a_marker, xlab = "diffs lum - bas"))
-    print(h1)
-}
-
-#### bas-lum: -
-#aov_data <- subset(tidy_panca2duoud, marker == "muc6" & compartment %in% c("bas", "lum") & !is.na(value))
-#aov_data$compartment <- factor(aov_data$compartment, levels = c("bas", "lum"))
-
-
+```{r, fig.width= 12, fig.asp= 0.75, align = "default"}
+# Paired plots
+ggpaired(data_baslum, x = "compartment", y = "value", 
+         order = c("bas", "lum"),
+         facet.by = "marker",
+         fill = "compartment", palette = "jco", 
+        title = "PDAC2Duodenum IHC tissue compartments", 
+        ylab = "% positive") + stat_pvalue_manual(pwc_baslum, tip.length = 0, label = "p = {round(p.adj, 3)} {p.adj.signif}", size = 3.7) + expand_limits(y=114) 
 ```
 
+Matrix case selection for figures
 ```{r}
-markers <- c("ck17", "ck20", "muc2", "muc5", "ca19-9", "ca125", "ki67")
-
-for(a_marker in markers) {
-  aov_data <- subset(tidy_panca2duoud, marker == a_marker & compartment %in% c("mu", "su") & !is.na(value))
-  aov_data$compartment <- factor(aov_data$compartment, levels = c("mu", "su"))
-
-  print(a_marker)
-  print(describeBy(aov_data$value, aov_data$compartment, digits = 1 ))
-}
-
-plot_data <- subset(tidy_panca2duoud, marker %in% markers & compartment %in% c("mu", "su") & !is.na(value))
-plot_data$marker <- factor(plot_data$marker, levels = markers)
-
-p1 <- ggplot(plot_data, aes(x = marker, y = value, fill = compartment)) +
-        geom_boxplot(alpha=0.7) +
-        scale_y_continuous(name = "Marker expression (%)",
-                           #breaks = seq(0, , 25),
-                           limits=c(0, 100)) +
-        scale_x_discrete(name = "Marker") +
-        ggtitle("Boxplot of significantly expressed makers by compartment") +
-        theme_bw() +
-        theme(plot.title = element_text(size = 11, family = "Tahoma", face = "bold"),
-              text = element_text(size = 12, family = "Tahoma"),
-              axis.title = element_text(face="bold"),
-              axis.text.x=element_text(size = 11),
-              legend.position = "bottom") +
-        scale_fill_brewer(palette = "Accent") +
-        labs(fill = "Compartment")
-p1
-```
-
-```{r}
-markers <- c("ck20", "muc5")
-
-for(a_marker in markers) {
-  aov_data <- subset(tidy_panca2duoud, marker == a_marker & compartment %in% c("bas", "lum") & !is.na(value))
-  aov_data$compartment <- factor(aov_data$compartment, levels = c("bas", "lum"))
-
-  print(a_marker)
-  print(describeBy(aov_data$value, aov_data$compartment, digits = 1 ))
-}
-
-plot_data <- subset(tidy_panca2duoud, marker %in% markers & compartment %in% c("bas", "lum") & !is.na(value))
-plot_data$marker <- factor(plot_data$marker, levels = markers)
-
-p1 <- ggplot(plot_data, aes(x = marker, y = value, fill = compartment)) +
-        geom_boxplot(alpha=0.7) +
-        scale_y_continuous(name = "Marker expression (%)",
-                           #breaks = seq(0, , 25),
-                           limits=c(0, 100)) +
-        scale_x_discrete(name = "Marker") +
-        ggtitle("Boxplot of significantly expressed makers by compartment") +
-        theme_bw() +
-        theme(plot.title = element_text(size = 14, family = "Tahoma", face = "bold"),
-              text = element_text(size = 12, family = "Tahoma"),
-              axis.title = element_text(face="bold"),
-              axis.text.x=element_text(size = 11),
-              legend.position = "bottom") +
-        scale_fill_brewer(palette = "Accent") +
-        labs(fill = "Compartment")
-p1
+tmp <- panca2duoud_wide_coltrim_rowtrim %>% select("pad", "ck17_su", "ck17_mu", "ck20_su", "ck20_mu", "ca125_su", "ca125_mu", "cdx2_su", "cdx2_mu", "muc2_su", "muc2_mu", "muc5_su", "muc5_mu", "ki67_su", "ki67_mu")
 ```
